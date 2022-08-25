@@ -14,7 +14,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/wanghaha-dev/asyncTask/asyncTask"
+	"github.com/wanghaha-dev/asyncTask"
 	"sync"
 )
 
