@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"reflect"
 	"strings"
 	"time"
 
@@ -84,7 +83,6 @@ func (t *Task) takeNormalTask(list string) (map[string]interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("result:", result, reflect.TypeOf(result[1]))
 
 	data := make(Map)
 	err = json.Unmarshal([]byte(result[1]), &data)
