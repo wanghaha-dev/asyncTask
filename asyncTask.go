@@ -4,8 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/go-redis/redis/v8"
+	"reflect"
+	"strings"
 	"time"
+
+	"github.com/go-redis/redis/v8"
+	"github.com/nacos-group/nacos-sdk-go/inner/uuid"
+	"github.com/tidwall/gjson"
 )
 
 type Config struct {
@@ -67,7 +72,7 @@ func (t *Task) PutFailTask(taskId string, data Map) error {
 	return t.putTask(taskId, "fail", data)
 }
 
-func (t *Task) takeNormalTask(list string) (Map, error) {
+func (t *Task) takeNormalTask(list string) (map[string]interface{}, error) {
 	sliceCmd := t.RedisClient.BRPop(t.ctx, 0, list)
 
 	err := sliceCmd.Err()
@@ -79,8 +84,9 @@ func (t *Task) takeNormalTask(list string) (Map, error) {
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("result:", result, reflect.TypeOf(result[1]))
 
-	data := make(map[string]interface{})
+	data := make(Map)
 	err = json.Unmarshal([]byte(result[1]), &data)
 	if err != nil {
 		return nil, err
@@ -157,6 +163,18 @@ func (t *Task) GetNormalTaskList() ([]string, error) {
 	return t.getFailTaskList("normal")
 }
 
+func (m Map) GetJSON() (string, error) {
+	data, err := json.Marshal(m)
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
+}
+
+func JSONGet(jsonContext string, key string) gjson.Result {
+	return gjson.Get(jsonContext, key)
+}
+
 func EachStrings(data []string) {
 	for _, item := range data {
 		fmt.Println(item)
@@ -171,4 +189,12 @@ func Each(count int, f func()) {
 
 func Datetime() string {
 	return time.Now().Format("2006-01-02 15:04:05")
+}
+
+func GenerateTaskId() (string, error) {
+	u, err := uuid.NewV4()
+	if err != nil {
+		return "", err
+	}
+	return strings.ReplaceAll(u.String(), "-", ""), nil
 }
